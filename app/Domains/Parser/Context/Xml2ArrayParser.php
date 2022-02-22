@@ -13,12 +13,17 @@ class Xml2ArrayParser
         $json = json_encode($xml);
         $array = json_decode($json,TRUE);
         //clear out the CDATA tags
+        $array = $this->clearCdata($array);
+        //return parsed data
+        return new ParsedData($array);
+    }
+
+    public function clearCdata(array $array) : array{
         foreach ($array as $key=>$value){
             if(is_string($value) && Str::startsWith($value, '<![CDATA[')){
                 $array[$key] = substr($value,9,-3);
             }
         }
-        //return parsed data
-        return new ParsedData($array);
+        return $array;
     }
 }

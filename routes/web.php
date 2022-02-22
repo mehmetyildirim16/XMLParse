@@ -13,5 +13,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [\App\Http\Controllers\XmlParsingController::class, 'index']);
+Route::post('/', [\App\Http\Controllers\XmlParsingController::class, 'index']);
 
