@@ -3,30 +3,23 @@
 namespace App\Http\Controllers;
 
 
+use App\Domains\Parser\Context\Xml2ArrayParser;
+use App\Domains\Reader\Context\XmlReader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class XmlParsingController extends Controller
 {
 
+    public function __construct(public XmlReader $xml_reader, public Xml2ArrayParser $parser) { }
+
     public function index(Request $request)
     {
-        $url = $request->all()['url'];
-        //open up a reader for the feed
-        $reader = new \XMLReader();
-        $reader->open($url);
-        //loop through the feed until we find the related tag
-        while ($reader->read() && $reader->name !== $request->all()['node'] ){}
-        $node = new \SimpleXMLElement($reader->readOuterXML(), LIBXML_NOCDATA);
-        $reader->close();
-        $xml = simplexml_load_string($node->asXML(), 'SimpleXMLElement', LIBXML_NOCDATA);
-        $json = json_encode($xml);
-        $array = json_decode($json,TRUE);
-        foreach ($array as $key=>$value){
-            if(Str::startsWith($value, '<![CDATA[')){
-                $array[$key] = substr($value,9,-3);
-            }
-        }
+        //read the first feed
+        $xml = $this->xml_reader->read($request->all()['url'], $request->all()['node'])->xml;
+        //convert to array
+        $array = $this->parser->parse($xml)->data;
+        //return the array as json
         return response()->json($array);
     }
 
